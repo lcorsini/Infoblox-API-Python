@@ -54,6 +54,7 @@ class Infoblox(object):
         create_cname_record
         delete_cname_record
         update_cname_record
+        modify_dhcp_lease_time
         create_dhcp_range
         delete_dhcp_range
         get_next_available_ip
@@ -67,6 +68,7 @@ class Infoblox(object):
         get_network
         get_network_by_ip
         get_network_by_extattrs
+        get_network_by_comment
         get_network_extattrs
         update_network_extattrs
         delete_network_extattrs
@@ -91,10 +93,10 @@ class Infoblox(object):
         self.iba_network_view = iba_network_view
         self.iba_verify_ssl = iba_verify_ssl
 
+
     def modify_dhcp_lease_time(self, rangeref, time, inherit="true"):
         """ Implements IBA REST API call to update dhcp lease time
-        :param start_ip_v4: the dhcp range starting address
-        :param end_ip_v4: the dhcp range ending address
+        :rangeref: the dhcp range object _ref
         :param time: the new lease time
         :param inherit: if need to inherit option from above
         """
@@ -117,17 +119,19 @@ class Infoblox(object):
             raise
 
 
-    def get_dhcp_range(self, start_ip_v4, fields=None):
-        """ Implements IBA REST API call to retrieve host record fields
-        Returns hash table of fields with field name as a hash key
-        :param fqdn: hostname in FQDN
+    def get_dhcp_range(self, network, fields=None):
+        """ Implements IBA REST API call to retrieve dhcp ranges
+        Returns a dhcp range with a start_ip or a comment provided
+        :param start_ip_v4: starting ip of the range
+        :param comment: eventual range tag present in the comment field
         :param fields: comma-separated list of field names (optional)
         """
         if fields:
-            rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/range?start_addr=' + start_ip_v4 + '&_return_fields=' + fields
+            rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/range?network=' + network + '&_return_fields%2B=' + fields
         else:
-            rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/range?start_addr=' + start_ip_v4 
+            rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/range?network=' + network
         try:
+            print rest_url
             r = requests.get(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
             r_json = r.json()
             if r.status_code == 200:
@@ -145,6 +149,36 @@ class Infoblox(object):
         except Exception:
             raise
 
+    def get_network_by_comment(self, comment, fields=None):
+        """ Implements IBA REST API call to retrieve network objects
+        Returns network by comment
+        :param comment: comment field string to search
+        :param fields: comma-separated list of field names
+                        (optional, returns network in CIDR format and netmask if not specified)
+        """
+        if not fields:
+            fields = 'network,netmask'
+        rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/network?comment=' + \
+            comment + '&network_view=' + self.iba_network_view + '&_return_fields=' + fields
+        try:
+            r = requests.get(url=rest_url, auth=(
+                self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
+            r_json = r.json()
+            if r.status_code == 200:
+                if len(r_json) > 0:
+                    return r_json[0]
+                else:
+                    raise InfobloxNotFoundException(
+                        "No requested network found: " + network)
+            else:
+                if 'text' in r_json:
+                    raise InfobloxNotFoundException(r_json['text'])
+                else:
+                    r.raise_for_status()
+        except ValueError:
+            raise Exception(r)
+        except Exception:
+            raise
 
     def get_next_available_ip(self, network):
         """ Implements IBA next_available_ip REST API call
