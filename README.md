@@ -22,6 +22,7 @@ Class **Infoblox** implements the following methods:
 - update_cname_record
 - create_dhcp_range
 - delete_dhcp_range
+- modify_dhcp_lease_time
 - get_next_available_ip
 - get_host
 - get_host_by_ip
@@ -32,6 +33,7 @@ Class **Infoblox** implements the following methods:
 - get_host_extattrs
 - get_network
 - get_network_by_ip
+- get_network_by_comment
 - get_network_by_extattrs
 - get_network_extattrs
 - update_network_extattrs
