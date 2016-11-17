@@ -131,7 +131,6 @@ class Infoblox(object):
         else:
             rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/range?network=' + network
         try:
-            print rest_url
             r = requests.get(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
             r_json = r.json()
             if r.status_code == 200:
