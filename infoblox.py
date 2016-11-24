@@ -93,19 +93,20 @@ class Infoblox(object):
         self.iba_network_view = iba_network_view
         self.iba_verify_ssl = iba_verify_ssl
 
-
     def modify_dhcp_lease_time(self, rangeref, time, inherit="true"):
         """ Implements IBA REST API call to update dhcp lease time
         :rangeref: the dhcp range object _ref
         :param time: the new lease time
         :param inherit: if need to inherit option from above
         """
-        rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/'+rangeref
-        payload = '{ "options": [{"name": "dhcp-lease-time", "use_option": ' + inherit +','+' "value": "' + time + '"}]}'
+        rest_url = 'https://' + self.iba_host + '/wapi/v' + \
+            self.iba_wapi_version + '/' + rangeref
+        payload = '{ "options": [{"name": "dhcp-lease-time", "use_option": ' + \
+            inherit + ',' + ' "value": "' + time + '"}]}'
         try:
-            r = requests.put(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl, data=payload)
+            r = requests.put(url=rest_url, auth=(
+                self.iba_user, self.iba_password), verify=self.iba_verify_ssl, data=payload)
             r_json = r.json()
-            print r_json
             if r.status_code == 200 or r.status_code == 201:
                 return
             else:
@@ -118,7 +119,6 @@ class Infoblox(object):
         except Exception:
             raise
 
-
     def get_dhcp_range(self, network, fields=None):
         """ Implements IBA REST API call to retrieve dhcp ranges
         Returns a dhcp range with a start_ip or a comment provided
@@ -127,17 +127,21 @@ class Infoblox(object):
         :param fields: comma-separated list of field names (optional)
         """
         if fields:
-            rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/range?network=' + network + '&_return_fields%2B=' + fields
+            rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + \
+                '/range?network=' + network + '&_return_fields%2B=' + fields
         else:
-            rest_url = 'https://' + self.iba_host + '/wapi/v' + self.iba_wapi_version + '/range?network=' + network
+            rest_url = 'https://' + self.iba_host + '/wapi/v' + \
+                self.iba_wapi_version + '/range?network=' + network
         try:
-            r = requests.get(url=rest_url, auth=(self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
+            r = requests.get(url=rest_url, auth=(
+                self.iba_user, self.iba_password), verify=self.iba_verify_ssl)
             r_json = r.json()
             if r.status_code == 200:
                 if len(r_json) > 0:
                     return r_json[0]
                 else:
-                    raise InfobloxNotFoundException("No range found: " + start_ip_v4)
+                    raise InfobloxNotFoundException(
+                        "No range found: " + network)
             else:
                 if 'text' in r_json:
                     raise InfobloxNotFoundException(r_json['text'])
@@ -153,7 +157,7 @@ class Infoblox(object):
         Returns network by comment
         :param comment: comment field string to search
         :param fields: comma-separated list of field names
-                        (optional, returns network in CIDR format and netmask if not specified)
+        (optional, returns network in CIDR format and netmask if not specified)
         """
         if not fields:
             fields = 'network,netmask'
@@ -168,7 +172,7 @@ class Infoblox(object):
                     return r_json[0]
                 else:
                     raise InfobloxNotFoundException(
-                        "No requested network found: " + network)
+                        "No requested network found: " + comment)
             else:
                 if 'text' in r_json:
                     raise InfobloxNotFoundException(r_json['text'])
