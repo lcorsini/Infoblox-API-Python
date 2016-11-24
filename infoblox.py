@@ -93,16 +93,16 @@ class Infoblox(object):
         self.iba_network_view = iba_network_view
         self.iba_verify_ssl = iba_verify_ssl
 
-    def modify_dhcp_lease_time(self, rangeref, time, inherit="true"):
+    def modify_dhcp_lease_time(self, rangeref, time, use_option="true"):
         """ Implements IBA REST API call to update dhcp lease time
         :rangeref: the dhcp range object _ref
         :param time: the new lease time
-        :param inherit: if need to inherit option from above
+        :param use_option: if set to false tells infoblox to inherit the lease time
         """
         rest_url = 'https://' + self.iba_host + '/wapi/v' + \
             self.iba_wapi_version + '/' + rangeref
         payload = '{ "options": [{"name": "dhcp-lease-time", "use_option": ' + \
-            inherit + ',' + ' "value": "' + time + '"}]}'
+            use_option + ',' + ' "value": "' + time + '"}]}'
         try:
             r = requests.put(url=rest_url, auth=(
                 self.iba_user, self.iba_password), verify=self.iba_verify_ssl, data=payload)
