@@ -57,6 +57,7 @@ class Infoblox(object):
         modify_dhcp_lease_time
         create_dhcp_range
         delete_dhcp_range
+        get_dhcp_range
         get_next_available_ip
         get_host
         get_host_by_ip
@@ -122,8 +123,7 @@ class Infoblox(object):
     def get_dhcp_range(self, network, fields=None):
         """ Implements IBA REST API call to retrieve dhcp ranges
         Returns a dhcp range with a start_ip or a comment provided
-        :param start_ip_v4: starting ip of the range
-        :param comment: eventual range tag present in the comment field
+        :param network: the network object which owns this range
         :param fields: comma-separated list of field names (optional)
         """
         if fields:
